@@ -1,0 +1,5 @@
+# Локальні змінні для `npm run preview` (скопіюйте в .dev.vars).
+# На продакшені ті самі змінні задаються в Cloudflare: Workers → autoekspert → Settings → Variables and Secrets.
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+BOOKING_WEBHOOK_URL=

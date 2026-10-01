@@ -1,0 +1,344 @@
+@import "tailwindcss";
+
+/* light: — стилі для світлої теми (data-theme="light" на <html>) */
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+/* ───────────────────────── Design tokens ───────────────────────── */
+@theme {
+  /* Темна база — графіт, а не чистий чорний */
+  --color-bg: #0a0a0b;
+  --color-surface: #111113;
+  --color-surface-2: #17171a;
+  --color-surface-3: #1f1f23;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.16);
+
+  --color-fg: #f4f4f5;
+  --color-muted: #a1a1aa;
+  --color-subtle: #8b8b94;
+  --color-metal: #c9cdd3;
+
+  /* Один акцент — бурштиновий. Замінити на фірмовий колір за потреби */
+  --color-accent: #f5a524;
+  --color-accent-hover: #ffb84d;
+  --color-accent-ink: #160f02;
+  --color-accent-soft: rgb(245 165 36 / 0.12);
+
+  /* Світла «паперова» поверхня для ритму сторінки */
+  --color-paper: #ecedef;
+  --color-paper-2: #e2e3e6;
+  --color-ink: #0b0b0c;
+  --color-ink-muted: #4b4b53;
+  --color-ink-line: rgb(11 11 12 / 0.12);
+  --color-paper-card: #ffffff;
+
+  --color-danger: #f87171;
+  --color-success: #4ade80;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+
+  /* Помірні радіуси — без «пігулок» */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 20px 40px -24px rgb(0 0 0 / 0.8);
+  --shadow-glow: 0 0 0 1px rgb(245 165 36 / 0.35), 0 8px 32px -8px rgb(245 165 36 / 0.35);
+
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-scan: scan 7s var(--ease-out-expo) infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-pulse-dot: pulse-dot 2.4s ease-out infinite;
+  --animate-dash: dash 3s linear infinite;
+
+  @keyframes scan {
+    0% { transform: translateX(-10%); opacity: 0; }
+    10% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateX(110%); opacity: 0; }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes pulse-dot {
+    0% { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(3.2); opacity: 0; }
+  }
+  @keyframes dash {
+    to { stroke-dashoffset: -40; }
+  }
+}
+
+/* ───────────────────────── Themes ───────────────────────── */
+:root {
+  --grid-line: rgb(255 255 255 / 0.045);
+  --grid-line-ink: rgb(11 11 12 / 0.06);
+  --dot-color: rgb(255 255 255 / 0.09);
+  --glass-bg: rgb(17 17 19 / 0.62);
+  color-scheme: dark;
+}
+
+/* Світла тема: перевизначаємо ті самі токени. «Паперові» секції стають темними — ритм сторінки зберігається. */
+[data-theme="light"] {
+  --color-bg: #f2f2ef;
+  --color-surface: #fafaf8;
+  --color-surface-2: #ffffff;
+  --color-surface-3: #e8e8e4;
+  --color-line: rgb(10 10 12 / 0.09);
+  --color-line-strong: rgb(10 10 12 / 0.18);
+  --color-fg: #0b0b0c;
+  --color-muted: #4f4f57;
+  --color-subtle: #6b6b74;
+  --color-metal: #2c2c31;
+  --color-accent: #ee9a12;
+  --color-accent-hover: #f5a524;
+  --color-accent-soft: rgb(238 154 18 / 0.13);
+  --color-paper: #111113;
+  --color-paper-2: #18181b;
+  --color-ink: #f4f4f5;
+  --color-ink-muted: #a1a1aa;
+  --color-ink-line: rgb(255 255 255 / 0.12);
+  --color-paper-card: #1c1c20;
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.6) inset, 0 20px 40px -28px rgb(0 0 0 / 0.35);
+  --grid-line: rgb(10 10 12 / 0.06);
+  --grid-line-ink: rgb(255 255 255 / 0.05);
+  --dot-color: rgb(10 10 12 / 0.1);
+  --glass-bg: rgb(250 250 248 / 0.72);
+  color-scheme: light;
+}
+
+/* Плавна зміна теми через View Transitions (коло від кнопки) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+    letter-spacing: -0.025em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  input, select, textarea, button {
+    font: inherit;
+  }
+
+  /* Іконка календаря у темній темі */
+  :root:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    cursor: pointer;
+  }
+}
+
+/* ───────────────────────── Utilities ───────────────────────── */
+
+/* Технічна сітка: тонкі лінії з затуханням до країв */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+@utility bg-grid-ink {
+  background-image:
+    linear-gradient(to right, var(--grid-line-ink) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line-ink) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+@utility bg-dots {
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+@utility mask-fade-y {
+  mask-image: linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
+}
+
+@utility mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+}
+
+@utility mask-radial {
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+
+/* Скляна поверхня — використовується точково (header, плаваючі мітки, діалог) */
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Плейсхолдер — дані, які має заповнити власник. Видно одразу. */
+@utility placeholder-data {
+  color: var(--color-accent);
+  text-decoration: underline dashed rgb(245 165 36 / 0.5);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+
+@utility placeholder-data-light {
+  color: var(--color-ink);
+  background: rgb(245 165 36 / 0.28);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 0.2em;
+  border-radius: 3px;
+}
+
+/* ───────────────────────── Map ───────────────────────── */
+/* Тайли OSM → монохром у стилі сайту. Тема перемикається без перезавантаження карти. */
+.styled-map .leaflet-container {
+  background: var(--color-surface-2);
+  font-family: var(--font-sans);
+}
+.styled-map .leaflet-tile-pane {
+  filter: grayscale(1) invert(1) brightness(0.78) contrast(1.15);
+}
+[data-theme="light"] .styled-map .leaflet-tile-pane {
+  filter: grayscale(1) brightness(1.04) contrast(0.92);
+}
+.styled-map .leaflet-control-zoom {
+  border: 1px solid var(--color-line-strong) !important;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: none;
+}
+.styled-map .leaflet-control-zoom a {
+  width: 36px;
+  height: 36px;
+  line-height: 34px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  color: var(--color-fg);
+  border-color: var(--color-line) !important;
+}
+.styled-map .leaflet-control-zoom a:hover {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+.styled-map .leaflet-control-attribution {
+  background: var(--glass-bg);
+  color: var(--color-subtle);
+  font-size: 10px;
+  border-top-left-radius: 6px;
+}
+.styled-map .leaflet-control-attribution a {
+  color: var(--color-muted);
+}
+.map-pin {
+  position: relative;
+}
+.map-pin__dot,
+.map-pin__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--color-accent);
+}
+.map-pin__dot {
+  box-shadow: 0 0 0 4px rgb(245 165 36 / 0.25), 0 0 0 1.5px var(--color-bg) inset;
+}
+.map-pin__pulse {
+  animation: pulse-dot 2.4s ease-out infinite;
+}
+.map-pin__label {
+  position: absolute;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font: 700 12px/1.2 var(--font-sans);
+  box-shadow: 0 6px 20px -6px rgb(0 0 0 / 0.5);
+}
+
+/* ───────────────────────── Custom cursor ───────────────────────── */
+/* Поза @layer, щоб перекривати утиліти на кшталт cursor-pointer */
+:root {
+  --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2732%27 height=%2732%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2710.5%27 fill=%27rgba(245,165,36,0.18)%27 stroke=%27%230b0b0c%27 stroke-width=%274%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2710.5%27 fill=%27none%27 stroke=%27%23f5a524%27 stroke-width=%272%27/%3E%3Cpath d=%27M16 1.5v5M16 25.5v5M1.5 16h5M25.5 16h5%27 stroke=%27%23f5a524%27 stroke-width=%272%27 stroke-linecap=%27round%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%272.6%27 fill=%27%23f5a524%27 stroke=%27%230b0b0c%27 stroke-width=%271%27/%3E%3C/svg%3E") 16 16, pointer;
+}
+
+a[href],
+button:not(:disabled),
+[role="button"],
+select,
+summary,
+label:has(> input[type="checkbox"], > input[type="radio"], input[type="radio"].sr-only, input[type="checkbox"]),
+input[type="checkbox"],
+input[type="radio"],
+input[type="submit"] {
+  cursor: var(--cursor-pointer);
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* ───────────────────────── Reduced motion ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .motion-safe-only {
+    display: none !important;
+  }
+}
