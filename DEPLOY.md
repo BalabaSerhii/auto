@@ -1,4 +1,4 @@
-# Деплой: GitHub → Cloudflare Workers → домен autoekspert.ua
+# Деплой: GitHub → Cloudflare Workers → домен autoremont.space
 
 Проект уже подготовлен к Cloudflare (адаптер `@opennextjs/cloudflare`, файлы `wrangler.jsonc`, `open-next.config.ts`).
 Сборка проверена локально: сайт, API заявок и оптимизация изображений работают на рантайме Workers, размер воркера ≈ 2 МБ (gzip) — помещается в бесплатный тариф (лимит 3 МБ).
@@ -75,34 +75,37 @@ git push -u origin main
 
 После сохранения нажмите **Deploy** (или сделайте любой `git push`), затем отправьте тестовую заявку с сайта.
 
-## Шаг 5. Подключить домен autoekspert.ua
+## Шаг 5. Подключить домен autoremont.space (Namecheap)
 
-### 5.1. Перенести DNS домена в Cloudflare
-1. В Cloudflare: **Account Home → Onboard a domain** (Add a domain) → `autoekspert.ua` → тариф **Free**.
-2. Cloudflare просканирует текущие DNS-записи. **Проверьте, что перенеслись MX и TXT-записи почты** (SPF, DKIM) — иначе перестанет работать `info@autoekspert.ua`. Если чего-то нет — скопируйте вручную из панели текущего DNS/почтового провайдера.
-3. Удалите старые записи `A`/`AAAA`/`CNAME` для `autoekspert.ua` и `www`, если они указывают на старый хостинг (почтовые записи **не трогайте**).
-4. Cloudflare выдаст **два NS-сервера** вида `xxx.ns.cloudflare.com`.
-5. В панели регистратора домена `.ua` (где покупали домен: imena.ua, nic.ua, ukrnames и т. п.) замените NS-серверы на эти два.
-6. Ждите статус **Active** в Cloudflare — обычно 1–2 часа, максимум до 24 часов. Придёт письмо.
+### 5.1. Добавить домен в Cloudflare
+1. В Cloudflare: **Account Home → Onboard a domain** → `autoremont.space` → тариф **Free** → Continue.
+2. Cloudflare покажет найденные DNS-записи. **Удалите** записи, которые ведут на парковку Namecheap (`A`/`CNAME` для `@` и `www` на `parkingpage.namecheap.com` и т. п.). Если на домене есть почта — **оставьте MX и TXT**.
+3. Cloudflare выдаст **два NS-сервера** вида `xxx.ns.cloudflare.com` — скопируйте их.
 
-### 5.2. Привязать домен к сайту
-1. **Workers & Pages → auto → Settings → Domains & Routes → Add → Custom domain**.
-2. Введите `autoekspert.ua` → **Add domain**. DNS-запись и SSL-сертификат Cloudflare создаст сам.
-3. Повторите для `www.autoekspert.ua`.
+### 5.2. Сменить NS в Namecheap
+1. **Domain List → autoremont.space → Manage → вкладка Domain**.
+2. В блоке **REDIRECT DOMAIN** удалите редирект `autoremont.space → http://www.autoremont.space/` (красный крестик) — после смены NS он всё равно перестанет работать, редирект сделаем в Cloudflare.
+3. В блоке **NAMESERVERS** выберите **Custom DNS** вместо *Namecheap BasicDNS*, впишите два NS от Cloudflare и нажмите **зелёную галочку** ✓.
+4. Вернитесь в Cloudflare → **Check nameservers**. Статус **Active** — обычно от 15 минут до пары часов (до 48 ч). Придёт письмо.
 
-### 5.3. Редирект www → без www
-**Домен autoekspert.ua → Rules → Redirect Rules → Create rule → шаблон «Redirect from WWW to root»** → Deploy.
+### 5.3. Привязать домен к Worker
+1. **Workers & Pages → auto → Settings → Domains & Routes → Add → Custom domain** → `autoremont.space` → **Add domain**. DNS-запись и SSL Cloudflare создаст сам.
+2. Повторите для `www.autoremont.space`.
+   Если Cloudflare пишет, что запись уже существует — удалите старую `A`/`CNAME` для этого имени в **DNS → Records** и повторите.
 
-### 5.4. HTTPS
-**SSL/TLS → Overview:** режим **Full (strict)**. **SSL/TLS → Edge Certificates:** включите **Always Use HTTPS**.
+### 5.4. Редирект www → без www
+**autoremont.space → Rules → Redirect Rules → Create rule → шаблон «Redirect from WWW to root»** → Deploy.
 
-Готово: сайт открывается по `https://autoekspert.ua`.
+### 5.5. HTTPS
+**SSL/TLS → Overview:** **Full (strict)**. **SSL/TLS → Edge Certificates:** включите **Always Use HTTPS**.
+
+Готово: сайт открывается по `https://autoremont.space`.
 
 ## Шаг 6. После запуска
 
-- **Google Search Console** (https://search.google.com/search-console): добавьте `autoekspert.ua` (подтверждение через DNS-запись TXT в Cloudflare) и отправьте карту сайта `https://autoekspert.ua/sitemap.xml`.
+- **Google Search Console** (https://search.google.com/search-console): добавьте `autoremont.space` (подтверждение через DNS-запись TXT в Cloudflare) и отправьте карту сайта `https://autoremont.space/sitemap.xml`.
 - **Google Business Profile**: создайте/обновите карточку СТО с тем же адресом, телефоном и графиком — это главное для локального поиска «СТО Київ».
-- Проверьте разметку: https://search.google.com/test/rich-results → `https://autoekspert.ua`.
+- Проверьте разметку: https://search.google.com/test/rich-results → `https://autoremont.space`.
 
 ## Полезные команды
 
