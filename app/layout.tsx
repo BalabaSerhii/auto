@@ -5,6 +5,8 @@ import { isFilled, siteUrl } from "@/lib/utils";
 import { autoRepairJsonLd } from "@/lib/structured-data";
 import { BookingProvider } from "@/components/booking/BookingProvider";
 import { SmoothAnchors } from "@/components/layout/SmoothAnchors";
+import { RevealObserver } from "@/components/layout/RevealObserver";
+import { CookieNotice } from "@/components/layout/CookieNotice";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -65,6 +67,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <BookingProvider>{children}</BookingProvider>
         <SmoothAnchors />
+        <RevealObserver />
+        <CookieNotice />
         {jsonLd ? (
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
         ) : null}

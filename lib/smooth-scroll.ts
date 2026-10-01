@@ -1,18 +1,18 @@
 "use client";
 
-import { animate, type AnimationPlaybackControls } from "motion/react";
+import { tween } from "./motion-lite";
 
 /** Відступ під фіксований header */
 const HEADER_OFFSET = 88;
 
-let current: AnimationPlaybackControls | null = null;
+let stopCurrent: (() => void) | null = null;
 
 /**
  * Плавна прокрутка з власною кривою (однакова в усіх браузерах).
  * Переривається, якщо користувач сам почав крутити колесо чи свайпати.
  */
 export function smoothScrollTo(top: number) {
-  current?.stop();
+  stopCurrent?.();
   const html = document.documentElement;
   const from = window.scrollY;
   const target = Math.max(0, Math.min(top, html.scrollHeight - window.innerHeight));
@@ -21,7 +21,10 @@ export function smoothScrollTo(top: number) {
 
   // Вимикаємо CSS smooth на час анімації, щоб не було «подвійного» згладжування
   html.style.scrollBehavior = "auto";
-  const cancel = () => current?.stop();
+  const cancel = () => {
+    stopCurrent?.();
+    cleanup();
+  };
   const cleanup = () => {
     html.style.scrollBehavior = "";
     window.removeEventListener("wheel", cancel);
@@ -32,13 +35,11 @@ export function smoothScrollTo(top: number) {
   window.addEventListener("touchstart", cancel, { passive: true });
   window.addEventListener("keydown", cancel);
 
-  current = animate(from, target, {
-    duration: Math.min(1.5, 0.55 + distance / 5000),
-    ease: [0.65, 0, 0.35, 1],
-    onUpdate: (y) => window.scrollTo(0, y),
-    onComplete: cleanup,
-    onStop: cleanup,
+  const stop = tween([from, target], { duration: Math.min(1.5, 0.55 + distance / 5000), ease: "inOut" }, (y) => {
+    window.scrollTo(0, y);
+    if (y === target) cleanup();
   });
+  stopCurrent = stop;
 }
 
 /** Прокрутка до секції за id ("top" або "" — на початок сторінки) */

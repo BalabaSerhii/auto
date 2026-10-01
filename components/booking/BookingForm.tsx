@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { AnimatePresence, m } from "motion/react";
 import { ArrowRight, Check, ChevronDown, CircleAlert, LoaderCircle, Phone, RotateCcw } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { services } from "@/data/services";
 import { site } from "@/data/site";
 import { cn, telHref } from "@/lib/utils";
 import { hasErrors, validateBooking, type BookingErrors, type BookingInput } from "@/lib/validation";
-import { EASE } from "@/components/ui/Reveal";
 import { buttonClass } from "@/components/ui/Button";
 
 type Status = "idle" | "loading" | "error" | "success";
@@ -36,6 +34,7 @@ export function BookingForm({
   const [touched, setTouched] = useState<Partial<Record<keyof BookingInput, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
+  const [round, setRound] = useState(0);
   const [minDate, setMinDate] = useState<string>();
   const formRef = useRef<HTMLFormElement>(null);
   const uid = useId();
@@ -89,6 +88,7 @@ export function BookingForm({
     setTouched({});
     setSubmitted(false);
     setStatus("idle");
+    setRound((r) => r + 1);
   };
 
   const field = (key: keyof BookingInput) => {
@@ -105,25 +105,13 @@ export function BookingForm({
 
   return (
     <div className={cn("relative", className)}>
-      <AnimatePresence mode="wait" initial={false}>
         {status === "success" ? (
-          <m.div
-            key="success"
-            role="status"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5, ease: EASE }}
-            className="flex flex-col items-start gap-5 py-6"
-          >
-            <m.span
-              initial={{ scale: 0.4, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
-              className="grid size-14 place-items-center rounded-full bg-success/15 text-success ring-1 ring-success/40"
+          <div role="status" className="anim-fade-up flex flex-col items-start gap-5 py-6">
+            <span
+              className="anim-pop grid size-14 place-items-center rounded-full bg-success/15 text-success ring-1 ring-success/40"
             >
               <Check className="size-7" strokeWidth={2.2} aria-hidden />
-            </m.span>
+            </span>
             <div>
               <p className="text-2xl font-semibold tracking-[-0.02em]">Дякуємо!</p>
               <p className="mt-2 max-w-sm text-muted">Ми отримали вашу заявку та зв&apos;яжемося з вами.</p>
@@ -131,18 +119,13 @@ export function BookingForm({
             <button type="button" onClick={onDone ?? reset} className={buttonClass("secondary", "md")}>
               {onDone ? "Закрити" : "Надіслати ще одну заявку"}
             </button>
-          </m.div>
+          </div>
         ) : (
-          <m.form
-            key="form"
+          <form
             ref={formRef}
             noValidate
             onSubmit={onSubmit}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3 }}
-            className="grid gap-4"
+            className={cn("grid gap-4", round > 0 && "anim-fade-in")}
             aria-busy={status === "loading"}
           >
             {/* honeypot */}
@@ -249,16 +232,8 @@ export function BookingForm({
               <ErrorText id={`${uid}-consent-error`} message={visibleError("consent")} />
             </div>
 
-            <AnimatePresence>
-              {status === "error" ? (
-                <m.div
-                  role="alert"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.35, ease: EASE }}
-                  className="overflow-hidden"
-                >
+            {status === "error" ? (
+                <div role="alert" className="anim-fade-down">
                   <div className="flex gap-3 rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-fg">
                     <CircleAlert className="mt-0.5 size-4 shrink-0 text-danger" aria-hidden />
                     <p>
@@ -273,9 +248,8 @@ export function BookingForm({
                       .
                     </p>
                   </div>
-                </m.div>
+                </div>
               ) : null}
-            </AnimatePresence>
 
             <div className={cn("flex flex-col gap-3", variant === "full" && "sm:flex-row")}>
               <button type="submit" disabled={status === "loading"} className={buttonClass("primary", "lg", "w-full sm:w-auto sm:min-w-52")}>
@@ -312,9 +286,8 @@ export function BookingForm({
                 Або зателефонуйте: <span className="placeholder-data">{site.phone}</span>
               </p>
             ) : null}
-          </m.form>
+          </form>
         )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -346,22 +319,17 @@ function Field({ label, id, required, error, children }: { label: string; id: st
   );
 }
 
+/** Помилка поля: плавно розкривається й згортається (CSS grid-rows), текст лишається на час згортання */
 function ErrorText({ id, message }: { id: string; message?: string }) {
+  const last = useRef(message);
+  if (message) last.current = message;
+  const shown = !!message;
   return (
-    <AnimatePresence initial={false}>
-      {message ? (
-        <m.p
-          id={id}
-          initial={{ opacity: 0, height: 0, y: -4 }}
-          animate={{ opacity: 1, height: "auto", y: 0 }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.3, ease: EASE }}
-          className="flex items-center gap-1.5 overflow-hidden text-[13px] text-danger"
-        >
-          <CircleAlert className="size-3.5 shrink-0" aria-hidden />
-          {message}
-        </m.p>
-      ) : null}
-    </AnimatePresence>
+    <div className={cn("grid transition-[grid-template-rows,opacity,margin] duration-300 ease-out-expo", shown ? "grid-rows-[1fr] opacity-100" : "-mt-2 grid-rows-[0fr] opacity-0")}>
+      <p id={shown ? id : undefined} className="flex items-center gap-1.5 overflow-hidden text-[13px] text-danger" aria-hidden={!shown}>
+        <CircleAlert className="size-3.5 shrink-0" aria-hidden />
+        {last.current}
+      </p>
+    </div>
   );
 }

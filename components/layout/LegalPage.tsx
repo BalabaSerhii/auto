@@ -28,7 +28,7 @@ export function LegalPage({ title, intro, sections, current }: { title: string; 
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link href="/" className="inline-flex h-10 items-center gap-2 rounded-md border border-line-strong px-3 text-sm font-medium transition-colors hover:border-accent/60">
+            <Link href="/" aria-label="На головну" className="inline-flex h-10 items-center gap-2 rounded-md border border-line-strong px-3 text-sm font-medium transition-colors hover:border-accent/60">
               <ArrowLeft className="size-4" aria-hidden />
               <span className="hidden sm:inline">На головну</span>
             </Link>

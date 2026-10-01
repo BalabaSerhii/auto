@@ -40,7 +40,7 @@ export function HeroVisual({ className }: { className?: string }) {
         {/* Лінія землі та розмірна лінія */}
         <line x1="20" y1="300" x2="780" y2="300" stroke="currentColor" strokeOpacity="0.12" />
         <g stroke="currentColor" strokeOpacity="0.22" strokeWidth="1">
-          <line x1="52" y1="336" x2="756" y2="336" strokeDasharray="4 6" className="animate-dash" />
+          <line x1="52" y1="336" x2="756" y2="336" strokeDasharray="4 6" />
           <line x1="52" y1="326" x2="52" y2="346" />
           <line x1="756" y1="326" x2="756" y2="346" />
           <line x1="180" y1="306" x2="180" y2="322" />
@@ -71,7 +71,7 @@ export function HeroVisual({ className }: { className?: string }) {
             <circle cx={cx} cy="244" r="50" stroke="currentColor" strokeOpacity="0.55" strokeWidth="1.4" />
             <circle cx={cx} cy="244" r="32" stroke="currentColor" strokeOpacity="0.25" />
             <circle cx={cx} cy="244" r="6" fill="currentColor" fillOpacity="0.5" />
-            <circle cx={cx} cy="244" r="40" stroke="#f5a524" strokeOpacity="0.5" strokeDasharray="3 9" className="origin-center animate-[spin_24s_linear_infinite] [transform-box:fill-box]" />
+            <circle cx={cx} cy="244" r="40" stroke="#f5a524" strokeOpacity="0.5" strokeDasharray="3 9" />
           </g>
         ))}
 

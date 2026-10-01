@@ -9,7 +9,7 @@ const FOCUSABLE =
  * Поведінка модального вікна: фокус усередину, Tab по колу, Esc закриває,
  * прокрутка сторінки блокується, після закриття фокус повертається назад.
  */
-export function useModal(open: boolean, onClose: () => void, extraSelector?: string): RefObject<HTMLDivElement | null> {
+export function useModal(open: boolean, onClose: () => void): RefObject<HTMLDivElement | null> {
   const ref = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -36,9 +36,7 @@ export function useModal(open: boolean, onClose: () => void, extraSelector?: str
         return;
       }
       if (e.key !== "Tab" || !node) return;
-      // Елементи поза контейнером, що мають лишатися в циклі Tab (напр. кнопка закриття меню в header)
-      const extra = extraSelector ? Array.from(document.querySelectorAll<HTMLElement>(extraSelector)) : [];
-      const items = [...extra, ...Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE))].filter((el) => el.offsetParent !== null);
+      const items = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => el.offsetParent !== null);
       if (items.length === 0) return;
       const first = items[0];
       const last = items[items.length - 1];
@@ -59,7 +57,7 @@ export function useModal(open: boolean, onClose: () => void, extraSelector?: str
       document.body.style.paddingRight = "";
       previouslyFocused?.focus?.({ preventScroll: true });
     };
-  }, [open, extraSelector]);
+  }, [open]);
 
   return ref;
 }

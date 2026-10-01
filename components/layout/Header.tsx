@@ -1,27 +1,24 @@
 "use client";
 
-import { AnimatePresence, m, useMotionValueEvent, useScroll } from "motion/react";
 import { ArrowRight, Phone, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { nav, site } from "@/data/site";
 import { cn, telHref } from "@/lib/utils";
 import { useModal } from "@/lib/use-modal";
+import { usePresence, useScrollY } from "@/lib/motion-lite";
 import { buttonClass } from "@/components/ui/Button";
-import { EASE } from "@/components/ui/Reveal";
 import { Ph } from "@/components/ui/Typography";
 import { BrandName, Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
-  const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const phone = telHref();
 
-  useMotionValueEvent(scrollY, "change", (y) => {
-    const prev = scrollY.getPrevious() ?? 0;
+  useScrollY((y, prev) => {
     setScrolled(y > 24);
     // Ховаємо при прокрутці вниз, показуємо при прокрутці вгору
     if (y > 320 && y > prev + 4) setHidden(true);
@@ -44,11 +41,11 @@ export function Header() {
 
   return (
     <>
-      <m.header
-        initial={false}
-        animate={{ y: hidden ? "-110%" : "0%" }}
-        transition={{ duration: 0.45, ease: EASE }}
-        className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5"
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 px-3 pt-3 transition-transform duration-500 ease-out-expo sm:px-5",
+          hidden ? "-translate-y-[110%]" : "translate-y-0",
+        )}
       >
         <div
           className={cn(
@@ -112,7 +109,7 @@ export function Header() {
             </button>
           </div>
         </div>
-      </m.header>
+      </header>
 
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} phone={phone} />
     </>
@@ -126,96 +123,80 @@ export function Header() {
  */
 function MobileMenu({ open, onClose, phone }: { open: boolean; onClose: () => void; phone: string | null }) {
   const ref = useModal(open, onClose);
+  const { mounted, state } = usePresence(open, 550);
+  if (!mounted) return null;
 
   return (
-    <AnimatePresence>
-      {open ? (
-        <m.div
-          ref={ref}
-          id="mobile-menu"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Меню"
-          className="fixed inset-0 z-90 flex h-dvh flex-col overflow-hidden bg-bg xl:hidden"
-          initial={{ clipPath: "inset(0 0 100% 0)" }}
-          animate={{ clipPath: "inset(0 0 0% 0)" }}
-          exit={{ clipPath: "inset(0 0 100% 0)" }}
-          transition={{ duration: 0.55, ease: EASE }}
-        >
-          <div aria-hidden className="bg-grid mask-radial pointer-events-none absolute inset-0 opacity-60" />
+    <div
+      ref={ref}
+      id="mobile-menu"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Меню"
+      data-state={state}
+      className="fixed inset-0 z-90 flex h-dvh flex-col overflow-hidden bg-bg transition-[clip-path] duration-500 ease-out-expo [clip-path:inset(0_0_100%_0)] data-[state=open]:[clip-path:inset(0_0_0%_0)] xl:hidden"
+    >
+      <div aria-hidden className="bg-grid mask-radial pointer-events-none absolute inset-0 opacity-60" />
 
-          {/* Верхня панель меню */}
-          <div className="relative px-3 pt-3 sm:px-5">
-            <div className="flex h-16 items-center justify-between gap-3 rounded-lg border border-line px-3 sm:px-4">
-              <a href="#top" onClick={onClose} className="flex min-h-11 min-w-0 items-center gap-3">
-                <Logo />
-                <span className="truncate text-[17px] font-bold tracking-[-0.02em]">
-                  <BrandName />
-                </span>
-              </a>
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <button
-                  type="button"
-                  onClick={onClose}
-                  data-autofocus
-                  aria-label="Закрити меню"
-                  className="grid size-10 place-items-center rounded-md border border-line-strong transition-colors hover:bg-fg/6"
-                >
-                  <X className="size-5" aria-hidden />
-                </button>
-              </div>
-            </div>
+      {/* Верхня панель меню */}
+      <div className="relative px-3 pt-3 sm:px-5">
+        <div className="flex h-16 items-center justify-between gap-3 rounded-lg border border-line px-3 sm:px-4">
+          <a href="#top" onClick={onClose} className="flex min-h-11 min-w-0 items-center gap-3">
+            <Logo />
+            <span className="truncate text-[17px] font-bold tracking-[-0.02em]">
+              <BrandName />
+            </span>
+          </a>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={onClose}
+              data-autofocus
+              aria-label="Закрити меню"
+              className="grid size-10 place-items-center rounded-md border border-line-strong transition-colors hover:bg-fg/6"
+            >
+              <X className="size-5" aria-hidden />
+            </button>
           </div>
+        </div>
+      </div>
 
-          <nav aria-label="Мобільна навігація" className="relative flex min-h-0 flex-1 flex-col justify-center px-5 sm:px-8">
-            <ul className="grid">
-              {nav.map((item, i) => (
-                <m.li
-                  key={item.href}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, ease: EASE, delay: 0.12 + i * 0.04 }}
-                  className="border-b border-line"
-                >
-                  <a
-                    href={item.href}
-                    onClick={onClose}
-                    className="flex items-baseline gap-4 py-[clamp(0.35rem,1.25dvh,1rem)] text-[clamp(1.2rem,3.6dvh,2rem)] leading-tight font-semibold tracking-[-0.02em] transition-colors hover:text-accent"
-                  >
-                    <span className="font-mono text-xs font-normal text-subtle">{String(i + 1).padStart(2, "0")}</span>
-                    {item.label}
-                  </a>
-                </m.li>
-              ))}
-            </ul>
-          </nav>
-
-          <m.div
-            className="relative grid gap-2 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: EASE, delay: 0.38 }}
-          >
-            <a href="#contact" onClick={onClose} className={buttonClass("primary", "lg", "w-full")}>
-              <span className="relative z-10 inline-flex items-center gap-2">
-                Записатися на сервіс <ArrowRight className="size-4" aria-hidden />
-              </span>
-            </a>
-            {phone ? (
-              <a href={phone} className={buttonClass("secondary", "lg", "w-full")}>
-                <span className="relative z-10 inline-flex items-center gap-2">
-                  <Phone className="size-4" aria-hidden /> {site.phone}
-                </span>
+      <nav aria-label="Мобільна навігація" className="relative flex min-h-0 flex-1 flex-col justify-center px-5 sm:px-8">
+        <ul className="grid">
+          {nav.map((item, i) => (
+            <li key={item.href} className="anim-fade-up border-b border-line" style={{ animationDelay: `${0.12 + i * 0.04}s` } as CSSProperties}>
+              <a
+                href={item.href}
+                onClick={onClose}
+                className="flex items-baseline gap-4 py-[clamp(0.35rem,1.25dvh,1rem)] text-[clamp(1.2rem,3.6dvh,2rem)] leading-tight font-semibold tracking-[-0.02em] transition-colors hover:text-accent"
+              >
+                <span className="font-mono text-xs font-normal text-subtle">{String(i + 1).padStart(2, "0")}</span>
+                {item.label}
               </a>
-            ) : (
-              <p className="text-center text-sm text-subtle">
-                Телефон: <Ph>{site.phone}</Ph>
-              </p>
-            )}
-          </m.div>
-        </m.div>
-      ) : null}
-    </AnimatePresence>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="anim-fade-up relative grid gap-2 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8" style={{ animationDelay: "0.38s" }}>
+        <a href="#contact" onClick={onClose} className={buttonClass("primary", "lg", "w-full")}>
+          <span className="relative z-10 inline-flex items-center gap-2">
+            Записатися на сервіс <ArrowRight className="size-4" aria-hidden />
+          </span>
+        </a>
+        {phone ? (
+          <a href={phone} className={buttonClass("secondary", "lg", "w-full")}>
+            <span className="relative z-10 inline-flex items-center gap-2">
+              <Phone className="size-4" aria-hidden /> {site.phone}
+            </span>
+          </a>
+        ) : (
+          <p className="text-center text-sm text-subtle">
+            Телефон: <Ph>{site.phone}</Ph>
+          </p>
+        )}
+      </div>
+    </div>
   );
 }

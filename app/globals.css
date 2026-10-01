@@ -234,25 +234,116 @@
   border-radius: 3px;
 }
 
+/* ───────────────────────── Reveal (CSS, без JS-бібліотек) ───────────────────────── */
+/* Перший екран: анімація стартує з першим малюванням і не чекає JS (швидкий LCP).
+   Початкова прозорість 0.01, а не 0, — щоб браузер одразу враховував текст як намальований. */
+@keyframes hero-up {
+  from { opacity: 0.01; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes cookie-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes cookie-out {
+  to { opacity: 0; transform: translateY(16px); }
+}
+@keyframes hero-word {
+  from { transform: translateY(105%); }
+  to { transform: none; }
+}
+.hero-in {
+  animation: hero-up 0.9s var(--ease-out-expo) both;
+  animation-delay: var(--hero-delay, 0s);
+}
+@keyframes hero-shift {
+  from { transform: translateY(12px); }
+  to { transform: none; }
+}
+.hero-shift {
+  animation: hero-shift 0.9s var(--ease-out-expo) both;
+}
+.hero-word {
+  display: inline-block;
+  animation: hero-word 0.9s var(--ease-out-expo) both;
+  animation-delay: var(--hero-delay, 0s);
+}
+
+/* Блоки нижче: ховаються лише коли працює JS (клас .js на <html>), показуються класом .is-in */
+.js [data-reveal] {
+  transition:
+    opacity 0.8s var(--ease-out-expo),
+    transform 0.8s var(--ease-out-expo),
+    clip-path 0.9s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0s);
+}
+.js [data-reveal]:not(.is-in) {
+  opacity: 0;
+}
+.js [data-reveal="rise"]:not(.is-in) {
+  transform: translateY(24px);
+}
+.js [data-reveal="scale"]:not(.is-in) {
+  transform: scale(0.96);
+}
+.js [data-reveal="clip"]:not(.is-in) {
+  clip-path: inset(0 0 100% 0);
+}
+.js [data-reveal="inset"]:not(.is-in) {
+  clip-path: inset(12% 12% 12% 12%);
+}
+
+/* ───────────────────────── UI keyframes (появи без JS-бібліотек) ───────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+}
+@keyframes fade-down {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+@keyframes step-from-right {
+  from { opacity: 0; transform: translateX(24px); }
+}
+@keyframes step-from-left {
+  from { opacity: 0; transform: translateX(-24px); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.4); }
+  70% { transform: scale(1.06); }
+}
+@keyframes zoom-in {
+  from { opacity: 0; transform: scale(0.97); }
+}
+.anim-zoom { animation: zoom-in 0.4s var(--ease-out-expo) both; }
+.anim-fade-in { animation: fade-in 0.35s ease-out both; }
+.anim-fade-up { animation: fade-up 0.5s var(--ease-out-expo) both; }
+.anim-fade-down { animation: fade-down 0.3s var(--ease-out-expo) both; }
+.anim-step-right { animation: step-from-right 0.35s var(--ease-out-expo) both; }
+.anim-step-left { animation: step-from-left 0.35s var(--ease-out-expo) both; }
+.anim-pop { animation: pop-in 0.5s var(--ease-out-expo) 0.1s both; }
+
 /* ───────────────────────── Map ───────────────────────── */
-/* Тайли OSM → монохром у стилі сайту. Тема перемикається без перезавантаження карти. */
-.styled-map .leaflet-container {
+/* Тайли OSM → монохром у стилі сайту. Тема перемикається без перезавантаження карти.
+   Подвоєний клас — щоб перекрити стилі Leaflet, які підключаються пізніше. */
+.styled-map.styled-map .leaflet-container {
   background: var(--color-surface-2);
   font-family: var(--font-sans);
 }
-.styled-map .leaflet-tile-pane {
+.styled-map.styled-map .leaflet-tile-pane {
   filter: grayscale(1) invert(1) brightness(0.78) contrast(1.15);
 }
-[data-theme="light"] .styled-map .leaflet-tile-pane {
+[data-theme="light"] .styled-map.styled-map .leaflet-tile-pane {
   filter: grayscale(1) brightness(1.04) contrast(0.92);
 }
-.styled-map .leaflet-control-zoom {
+.styled-map.styled-map .leaflet-control-zoom {
   border: 1px solid var(--color-line-strong) !important;
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: none;
 }
-.styled-map .leaflet-control-zoom a {
+.styled-map.styled-map .leaflet-control-zoom a {
   width: 36px;
   height: 36px;
   line-height: 34px;
@@ -261,17 +352,17 @@
   color: var(--color-fg);
   border-color: var(--color-line) !important;
 }
-.styled-map .leaflet-control-zoom a:hover {
+.styled-map.styled-map .leaflet-control-zoom a:hover {
   background: var(--color-accent);
   color: var(--color-accent-ink);
 }
-.styled-map .leaflet-control-attribution {
+.styled-map.styled-map .leaflet-control-attribution {
   background: var(--glass-bg);
   color: var(--color-subtle);
   font-size: 10px;
   border-top-left-radius: 6px;
 }
-.styled-map .leaflet-control-attribution a {
+.styled-map.styled-map .leaflet-control-attribution a {
   color: var(--color-muted);
 }
 .map-pin {
@@ -340,5 +431,10 @@ button:disabled {
   }
   .motion-safe-only {
     display: none !important;
+  }
+  .js [data-reveal]:not(.is-in) {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
   }
 }

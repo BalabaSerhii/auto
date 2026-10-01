@@ -2,8 +2,7 @@ import { ArrowRight, Clock, MapPin, MessageCircle, Phone } from "lucide-react";
 import { site } from "@/data/site";
 import { primaryMessenger, telHref } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Reveal } from "@/components/ui/Reveal";
-import { TextReveal } from "@/components/ui/Motion";
+import type { CSSProperties, ReactNode } from "react";
 import { Ph } from "@/components/ui/Typography";
 import { HeroVisual } from "./HeroVisual";
 
@@ -24,24 +23,24 @@ export function Hero() {
 
       <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:items-center lg:gap-10 lg:px-8">
         <div>
-          <Reveal>
+          <HeroIn>
             <p className="inline-flex items-center gap-2.5 rounded-md border border-line bg-fg/3 px-3 py-1.5 font-mono text-[11px] tracking-[0.16em] text-metal uppercase">
               <span aria-hidden className="size-1.5 rounded-full bg-accent" />
               Автосервіс <span className="text-subtle">•</span> Діагностика <span className="text-subtle">•</span> Ремонт
             </p>
-          </Reveal>
+          </HeroIn>
 
           <h1 id="hero-title" className="mt-6 text-[2.75rem] leading-[0.98] font-semibold tracking-[-0.035em] sm:text-6xl lg:text-[4.5rem] xl:text-[5rem]">
-            <TextReveal text="Знаємо, що потрібно вашому авто." accentWords={["авто."]} delay={0.1} />
+            <HeroTitle text="Знаємо, що потрібно вашому авто." accentWords={["авто."]} />
           </h1>
 
-          <Reveal delay={0.35}>
+          <HeroIn shiftOnly>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
               Діагностика, технічне обслуговування та ремонт автомобілів. Пояснюємо проблему, погоджуємо роботи та повертаємо авто в дорогу.
             </p>
-          </Reveal>
+          </HeroIn>
 
-          <Reveal delay={0.45} className="mt-9 flex flex-col gap-3 sm:flex-row">
+          <HeroIn delay={0.45} className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Button href="#contact" size="lg" className="w-full sm:w-auto">
               Записатися на сервіс
               <ArrowRight className="size-4 transition-transform duration-300 group-hover/btn:translate-x-0.5" aria-hidden />
@@ -61,9 +60,9 @@ export function Hero() {
                 Дізнатися вартість
               </Button>
             )}
-          </Reveal>
+          </HeroIn>
 
-          <Reveal delay={0.55}>
+          <HeroIn delay={0.55}>
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
               <li className="inline-flex items-center gap-2">
                 <MapPin className="size-4 text-subtle" aria-hidden />
@@ -80,12 +79,12 @@ export function Hero() {
                 </li>
               ) : null}
             </ul>
-          </Reveal>
+          </HeroIn>
         </div>
 
-        <Reveal effect="scale" delay={0.2}>
+        <HeroIn delay={0.2}>
           <HeroVisual />
-        </Reveal>
+        </HeroIn>
       </div>
 
       {/* Конкретні обіцянки замість гучних слоганів */}
@@ -100,5 +99,42 @@ export function Hero() {
         </ul>
       </div>
     </section>
+  );
+}
+
+/**
+ * Поява елементів першого екрана — чистий CSS (.hero-in у globals.css).
+ * Анімація стартує з першим малюванням і не чекає JavaScript — це тримає LCP низьким.
+ */
+function HeroIn({ children, className, delay = 0, shiftOnly }: { children: ReactNode; className?: string; delay?: number; shiftOnly?: boolean }) {
+  // shiftOnly — лише зсув без прозорості: текст видно з першого кадру (це LCP-елемент)
+  const base = shiftOnly ? "hero-shift" : "hero-in";
+  return (
+    <div className={className ? `${base} ${className}` : base} style={{ "--hero-delay": `${delay}s` } as CSSProperties}>
+      {children}
+    </div>
+  );
+}
+
+/** Заголовок, що «виїжджає» по словах з-під маски. Для скрінрідерів — цілий рядок. */
+function HeroTitle({ text, accentWords = [], delay = 0 }: { text: string; accentWords?: string[]; delay?: number }) {
+  const words = text.split(" ");
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden>
+        {words.map((word, i) => (
+          <span key={i} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+            <span
+              className={accentWords.includes(word) ? "hero-word text-accent" : "hero-word"}
+              style={{ "--hero-delay": `${delay + i * 0.06}s` } as CSSProperties}
+            >
+              {word}
+            </span>
+            {i < words.length - 1 ? " " : null}
+          </span>
+        ))}
+      </span>
+    </>
   );
 }

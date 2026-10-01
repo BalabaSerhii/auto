@@ -1,18 +1,17 @@
 "use client";
 
-import { AnimatePresence, m } from "motion/react";
 import { Plus } from "lucide-react";
 import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Ph } from "./Typography";
-import { EASE } from "./Reveal";
 
 type Item = { q: string; a: string };
 
 /**
  * Доступний акордеон (WAI-ARIA pattern): кнопка в заголовку, aria-expanded,
  * aria-controls, регіон з aria-labelledby. Відкритий лише один пункт —
- * відкриття нового згортає попередній.
+ * відкриття нового згортає попередній. Плавна висота — CSS grid-rows;
+ * відповіді завжди є в HTML (добре для SEO), згорнуті — inert.
  */
 export function Accordion({ items, className }: { items: Item[]; className?: string }) {
   const [open, setOpen] = useState<number | null>(0);
@@ -52,24 +51,22 @@ export function Accordion({ items, className }: { items: Item[]; className?: str
                 </span>
               </button>
             </h3>
-            <AnimatePresence initial={false}>
-              {isOpen && (
-                <m.div
-                  id={panelId}
-                  role="region"
-                  aria-labelledby={btnId}
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.45, ease: EASE }}
-                  className="overflow-hidden"
-                >
-                  <p className="max-w-2xl pb-7 pl-9 text-base leading-relaxed text-muted sm:pl-10">
-                    <Ph>{item.a}</Ph>
-                  </p>
-                </m.div>
+            <div
+              id={panelId}
+              role="region"
+              aria-labelledby={btnId}
+              inert={!isOpen}
+              className={cn(
+                "grid transition-[grid-template-rows,opacity] duration-500 ease-out-expo",
+                isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
               )}
-            </AnimatePresence>
+            >
+              <div className="overflow-hidden">
+                <p className="max-w-2xl pb-7 pl-9 text-base leading-relaxed text-muted sm:pl-10">
+                  <Ph>{item.a}</Ph>
+                </p>
+              </div>
+            </div>
           </div>
         );
       })}

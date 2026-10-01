@@ -1,13 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { AnimatePresence, animate, m, useInView, useReducedMotion } from "motion/react";
 import { Camera, ChevronLeft, ChevronRight, MoveHorizontal, X } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { beforeAfter, gallery, type BeforeAfterItem, type GalleryItem } from "@/data/gallery";
 import { cn } from "@/lib/utils";
 import { useModal } from "@/lib/use-modal";
-import { EASE } from "@/components/ui/Reveal";
+import { prefersReducedMotion, tween, useInViewOnce } from "@/lib/motion-lite";
 import { Ph, SectionHeading } from "@/components/ui/Typography";
 
 export function Gallery() {
@@ -34,12 +33,10 @@ export function Gallery() {
         {gallery.map((item, i) => {
           const photoIndex = item.src ? photos.findIndex((p) => p.src === item.src) : -1;
           return (
-            <m.li
+            <li
               key={i}
-              initial={{ clipPath: "inset(12% 12% 12% 12%)", opacity: 0 }}
-              whileInView={{ clipPath: "inset(0% 0% 0% 0%)", opacity: 1 }}
-              viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-              transition={{ duration: 0.9, ease: EASE, delay: (i % 3) * 0.08 }}
+              data-reveal="inset"
+              style={{ "--reveal-delay": `${(i % 3) * 0.08}s` } as CSSProperties}
               className={cn(
                 "relative aspect-4/5 w-[78vw] shrink-0 snap-start overflow-hidden rounded-lg border border-line sm:mb-4 sm:w-full sm:break-inside-avoid",
                 item.tall ? "sm:aspect-4/5" : "sm:aspect-4/3",
@@ -67,7 +64,7 @@ export function Gallery() {
                   </span>
                 </div>
               )}
-            </m.li>
+            </li>
           );
         })}
       </ul>
@@ -86,12 +83,14 @@ export function Gallery() {
 /** Вкладки з кількома парами «до/після» */
 function BeforeAfterTabs({ items }: { items: BeforeAfterItem[] }) {
   const [active, setActive] = useState(0);
+  const [switched, setSwitched] = useState(false);
   const baseId = useId();
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     const next = (active + (e.key === "ArrowRight" ? 1 : -1) + items.length) % items.length;
+    setSwitched(true);
     setActive(next);
     tabs.current[next]?.focus();
   };
@@ -116,7 +115,10 @@ function BeforeAfterTabs({ items }: { items: BeforeAfterItem[] }) {
               aria-selected={active === i}
               aria-controls={`${baseId}-panel`}
               tabIndex={active === i ? 0 : -1}
-              onClick={() => setActive(i)}
+              onClick={() => {
+                setSwitched(true);
+                setActive(i);
+              }}
               className={cn(
                 "min-h-10 flex-1 rounded-md px-4 text-sm font-semibold transition-colors sm:flex-none",
                 active === i ? "bg-accent text-accent-ink" : "text-muted hover:bg-fg/6 hover:text-fg",
@@ -129,11 +131,9 @@ function BeforeAfterTabs({ items }: { items: BeforeAfterItem[] }) {
       </div>
 
       <div id={`${baseId}-panel`} role="tabpanel" aria-labelledby={`${baseId}-tab-${active}`} className="mt-6">
-        <AnimatePresence mode="wait" initial={false}>
-          <m.div key={active} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35, ease: EASE }}>
-            <BeforeAfter item={items[active]} />
-          </m.div>
-        </AnimatePresence>
+        <div key={active} className={switched ? "anim-fade-up" : undefined}>
+          <BeforeAfter item={items[active]} />
+        </div>
       </div>
     </div>
   );
@@ -146,22 +146,15 @@ function BeforeAfterTabs({ items }: { items: BeforeAfterItem[] }) {
 function BeforeAfter({ item }: { item: BeforeAfterItem }) {
   const [pos, setPos] = useState(50);
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px 0px -25% 0px" });
-  const reduce = useReducedMotion();
+  const inView = useInViewOnce(ref, "0px 0px -25% 0px");
   const touched = useRef(false);
 
   useEffect(() => {
-    if (!inView || reduce) return;
-    const controls = animate(50, [50, 22, 78, 50], {
-      duration: 2.4,
-      ease: "easeInOut",
-      delay: 0.3,
-      onUpdate: (v) => {
-        if (!touched.current) setPos(v);
-      },
+    if (!inView || prefersReducedMotion()) return;
+    return tween([50, 22, 78, 50], { duration: 2.4, delay: 0.3, ease: "inOut" }, (v) => {
+      if (!touched.current) setPos(v);
     });
-    return () => controls.stop();
-  }, [inView, reduce]);
+  }, [inView]);
 
   return (
     <figure>
@@ -241,18 +234,14 @@ function Lightbox({ photos, index, onChange }: { photos: (GalleryItem & { src: s
   const photo = index !== null ? photos[index] : null;
 
   return (
-    <AnimatePresence>
+    <>
       {photo ? (
-        <m.div
+        <div
           ref={ref}
           role="dialog"
           aria-modal="true"
           aria-label="Перегляд фото"
-          className="fixed inset-0 z-80 flex flex-col bg-black/92 text-white backdrop-blur-md"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          className="anim-fade-in fixed inset-0 z-80 flex flex-col bg-black/92 text-white backdrop-blur-md"
         >
           <div className="flex items-center justify-between p-4">
             <span className="font-mono text-xs text-white/60 tabular-nums">
@@ -273,18 +262,9 @@ function Lightbox({ photos, index, onChange }: { photos: (GalleryItem & { src: s
               setTouchX(null);
             }}
           >
-            <AnimatePresence mode="wait" initial={false}>
-              <m.div
-                key={photo.src}
-                className="absolute inset-4 sm:inset-x-20"
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.4, ease: EASE }}
-              >
-                <Image src={photo.src} alt={photo.alt} fill sizes="100vw" className="object-contain" onClick={(e) => e.stopPropagation()} />
-              </m.div>
-            </AnimatePresence>
+            <div key={photo.src} className="anim-zoom absolute inset-4 sm:inset-x-20">
+              <Image src={photo.src} alt={photo.alt} fill sizes="100vw" className="object-contain" onClick={(e) => e.stopPropagation()} />
+            </div>
             {photos.length > 1 ? (
               <>
                 <button
@@ -313,8 +293,8 @@ function Lightbox({ photos, index, onChange }: { photos: (GalleryItem & { src: s
             ) : null}
           </div>
           <p className="p-4 text-center text-sm text-white/80">{photo.caption}</p>
-        </m.div>
+        </div>
       ) : null}
-    </AnimatePresence>
+    </>
   );
 }

@@ -14,8 +14,8 @@ export function FinalCTA() {
         <div aria-hidden className="absolute -top-1/2 left-1/2 -z-10 h-full w-2/3 -translate-x-1/2 rounded-full bg-accent/15 blur-[100px]" />
         {/* Схематичні лінії */}
         <svg aria-hidden className="absolute inset-0 -z-10 size-full" preserveAspectRatio="none" viewBox="0 0 1200 400" fill="none">
-          <path d="M0 320 H260 L300 280 H520" stroke="rgb(245 165 36 / 0.35)" strokeDasharray="4 8" className="animate-dash" />
-          <path d="M1200 80 H940 L900 120 H700" stroke="currentColor" strokeOpacity="0.15" strokeDasharray="4 8" className="animate-dash" />
+          <path d="M0 320 H260 L300 280 H520" stroke="rgb(245 165 36 / 0.35)" strokeDasharray="4 8" />
+          <path d="M1200 80 H940 L900 120 H700" stroke="currentColor" strokeOpacity="0.15" strokeDasharray="4 8" />
           <circle cx="520" cy="280" r="3" fill="#f5a524" />
           <circle cx="700" cy="120" r="3" fill="currentColor" fillOpacity="0.4" />
         </svg>

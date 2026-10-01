@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
 import { BookingDialog } from "./BookingDialog";
 
 type OpenOptions = {
@@ -24,8 +23,7 @@ export function useBooking() {
 }
 
 /**
- * Клієнтська оболонка: Motion (LazyMotion — лише потрібні фічі, менший бандл),
- * повага до prefers-reduced-motion та компактна форма запису у діалозі.
+ * Клієнтська оболонка: компактна форма запису в діалозі, доступна з будь-якого місця сторінки.
  */
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<{ open: boolean } & OpenOptions>({ open: false });
@@ -35,14 +33,10 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const value = useMemo(() => ({ open }), [open]);
 
   return (
-    <LazyMotion features={domAnimation} strict>
-      <MotionConfig reducedMotion="user">
-        <Ctx.Provider value={value}>
-          {children}
-          <BookingDialog open={state.open} onClose={close} context={state.context} service={state.service} title={state.title} />
-        </Ctx.Provider>
-      </MotionConfig>
-    </LazyMotion>
+    <Ctx.Provider value={value}>
+      {children}
+      <BookingDialog open={state.open} onClose={close} context={state.context} service={state.service} title={state.title} />
+    </Ctx.Provider>
   );
 }
 

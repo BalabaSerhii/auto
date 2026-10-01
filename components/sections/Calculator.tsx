@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, m } from "motion/react";
 import { ArrowLeft, ArrowRight, RotateCcw, ScanLine } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { calcCategories, calcOldestYear, calcSteps } from "@/data/calculator";
@@ -8,7 +7,6 @@ import { pricing } from "@/data/pricing";
 import { cn, priceLabel } from "@/lib/utils";
 import { useBooking } from "@/components/booking/BookingProvider";
 import { buttonClass } from "@/components/ui/Button";
-import { EASE } from "@/components/ui/Reveal";
 import { Ph } from "@/components/ui/Typography";
 
 type State = { category: string; brand: string; model: string; year: string; description: string };
@@ -18,6 +16,7 @@ const initial: State = { category: "", brand: "", model: "", year: "", descripti
 export function Calculator() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
+  const [moved, setMoved] = useState(false);
   const [data, setData] = useState<State>(initial);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const mounted = useRef(false);
@@ -41,6 +40,7 @@ export function Calculator() {
 
   const canNext = step === 0 ? !!data.category : step === 1 ? data.brand.trim().length >= 2 : true;
   const go = (to: number) => {
+    setMoved(true);
     setDir(to > step ? 1 : -1);
     setStep(to);
   };
@@ -71,22 +71,15 @@ export function Calculator() {
                 {label}
                 {i < step ? " — виконано" : i === step ? " — поточний" : ""}
               </span>
-              <m.span aria-hidden className="absolute inset-0 origin-left bg-accent" initial={false} animate={{ scaleX: i <= step ? 1 : 0 }} transition={{ duration: 0.5, ease: EASE }} />
+              <span aria-hidden className={cn("absolute inset-0 origin-left bg-accent transition-transform duration-500 ease-out-expo", i <= step ? "scale-x-100" : "scale-x-0")} />
             </li>
           ))}
         </ol>
       </div>
 
       <div className="relative min-h-[26rem] px-5 py-6 sm:px-7 sm:py-7">
-        <AnimatePresence mode="wait" custom={dir} initial={false}>
-          <m.div
-            key={step}
-            custom={dir}
-            initial={{ opacity: 0, x: dir * 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: dir * -24 }}
-            transition={{ duration: 0.35, ease: EASE }}
-          >
+        {/* Новий крок монтується заново (key) і в'їжджає з боку напрямку руху */}
+        <div key={step} className={moved ? (dir > 0 ? "anim-step-right" : "anim-step-left") : undefined}>
             <h3 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold tracking-[-0.02em] outline-none">
               {calcSteps[step]}
             </h3>
@@ -234,8 +227,7 @@ export function Calculator() {
                 </div>
               </div>
             )}
-          </m.div>
-        </AnimatePresence>
+        </div>
       </div>
 
       {step < 3 ? (

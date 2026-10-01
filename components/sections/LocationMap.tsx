@@ -1,7 +1,6 @@
 "use client";
 
-import "leaflet/dist/leaflet.css";
-import { useInView } from "motion/react";
+import { useInViewOnce } from "@/lib/motion-lite";
 import { useEffect, useRef, useState } from "react";
 import type { Map as LeafletMap } from "leaflet";
 import { site } from "@/data/site";
@@ -10,13 +9,13 @@ import { cn } from "@/lib/utils";
 /**
  * Карта в стилі сайту: тайли OpenStreetMap, приведені CSS-фільтрами до
  * монохрому під темну/світлу тему (див. .styled-map у globals.css), власний
- * бурштиновий маркер. Leaflet підвантажується лише коли блок наближається
- * до екрана. Колесо миші карту не масштабує — щоб не заважати прокрутці.
+ * бурштиновий маркер. Leaflet (JS і CSS) підвантажується лише коли блок
+ * наближається до екрана — на швидкість першого екрана він не впливає. Колесо миші карту не масштабує — щоб не заважати прокрутці.
  */
 export function LocationMap({ className }: { className?: string }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(wrapRef, { once: true, margin: "400px 0px" });
+  const inView = useInViewOnce(wrapRef, "400px 0px");
   const [ready, setReady] = useState(false);
   const geo = site.address.geo;
 
@@ -25,7 +24,7 @@ export function LocationMap({ className }: { className?: string }) {
     let map: LeafletMap | null = null;
     let cancelled = false;
 
-    import("leaflet").then((L) => {
+    Promise.all([import("leaflet"), loadLeafletCss()]).then(([L]) => {
       if (cancelled || !mapRef.current) return;
       const coarse = window.matchMedia("(pointer: coarse)").matches;
       map = L.map(mapRef.current, {
@@ -83,4 +82,19 @@ export function LocationMap({ className }: { className?: string }) {
       </div>
     </div>
   );
+}
+
+const LEAFLET_CSS = "/vendor/leaflet-1.9.4.css";
+
+/** Стилі Leaflet підключаються на вимогу, щоб не блокувати першу відмальовку сторінки */
+function loadLeafletCss(): Promise<void> {
+  if (document.querySelector(`link[href="${LEAFLET_CSS}"]`)) return Promise.resolve();
+  return new Promise((resolve) => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = LEAFLET_CSS;
+    link.onload = () => resolve();
+    link.onerror = () => resolve();
+    document.head.appendChild(link);
+  });
 }
