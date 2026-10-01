@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   // Назва Worker'а в Cloudflare. Має збігатися з "service" нижче.
-  "name": "autoekspert",
+  "name": "auto",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -12,7 +12,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "autoekspert"
+      "service": "auto"
     }
   ],
   // Оптимізація зображень next/image через Cloudflare Images

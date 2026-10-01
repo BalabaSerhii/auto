@@ -42,7 +42,7 @@ git push -u origin main
 
 | Поле | Значение |
 |---|---|
-| Project name | `autoekspert` (**должно совпадать** с `name` в `wrangler.jsonc`) |
+| Project name | `auto` (**должно совпадать** с `name` в `wrangler.jsonc`) |
 | Production branch | `main` |
 | Build command | `npx opennextjs-cloudflare build` |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
@@ -50,7 +50,7 @@ git push -u origin main
 | Root directory | `/` (пусто) |
 
 5. Нажмите **Create and deploy**. Первая сборка занимает 2–4 минуты.
-6. После сборки сайт откроется по адресу вида `https://autoekspert.<ваш-аккаунт>.workers.dev` — проверьте его.
+6. После сборки сайт откроется по адресу вида `https://auto.<ваш-аккаунт>.workers.dev` — проверьте его.
 
 Дальше всё автоматически: каждый `git push` в `main` → новая сборка и деплой.
 
@@ -64,7 +64,7 @@ git push -u origin main
 3. Откройте в браузере `https://api.telegram.org/bot<ТОКЕН>/getUpdates` и найдите `"chat":{"id": ...}` — это **TELEGRAM_CHAT_ID** (для группы число начинается с `-`).
 
 ### Добавить в Cloudflare
-**Workers & Pages → autoekspert → Settings → Variables and Secrets → Add:**
+**Workers & Pages → auto → Settings → Variables and Secrets → Add:**
 
 | Тип | Имя | Значение |
 |---|---|---|
@@ -86,7 +86,7 @@ git push -u origin main
 6. Ждите статус **Active** в Cloudflare — обычно 1–2 часа, максимум до 24 часов. Придёт письмо.
 
 ### 5.2. Привязать домен к сайту
-1. **Workers & Pages → autoekspert → Settings → Domains & Routes → Add → Custom domain**.
+1. **Workers & Pages → auto → Settings → Domains & Routes → Add → Custom domain**.
 2. Введите `autoekspert.ua` → **Add domain**. DNS-запись и SSL-сертификат Cloudflare создаст сам.
 3. Повторите для `www.autoekspert.ua`.
 
